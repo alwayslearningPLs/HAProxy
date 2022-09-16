@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,9 +18,9 @@ type res struct {
   Message string `json:"message"`
 }
 
-func main() {
+func main() { 
   r := gin.Default()
-
+  
   r.GET("/ping", func(c *gin.Context) {
     c.Negotiate(http.StatusOK, gin.Negotiate{
       Offered: offered,
@@ -27,5 +28,5 @@ func main() {
     })
   })
 
-  r.Run()
+  r.Run(":" + os.Getenv("WEB_PORT"))
 }

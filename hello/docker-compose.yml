@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  # We are hardcoding all that stuff (services and ports) in this first example
+  # because it is a "Hello world" and it is not necessary to set up a docker swarm
+  # or some type of orchestrator. Stay tunned baby!
+  server1:
+    image: hello-server-haproxy:0.0.1
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    networks:
+      - server-net
+    environment:
+      - "WEB_PORT=8081"
+  server2:
+    image: hello-server-haproxy:0.0.1
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    networks:
+      - server-net
+    environment:
+      - "WEB_PORT=8082"
+  haproxy:
+    image: my-custom-haproxy:0.0.1
+    build:
+      context: ./haproxy
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      server-net:
+      haproxy-net:
+        aliases:
+          - your.ping.pong.service
+    volumes:
+    - ./haproxy/haproxy.cfg:/etc/haproxy/haproxy.cfg
+networks:
+  server-net:
+    name: server-net
+    external: false
+  haproxy-net:
+    name: haproxy-net
+    external: false
+
