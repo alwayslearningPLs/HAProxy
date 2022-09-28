@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+  haproxy:
+    image: haproxy:lts-alpine
+    networks:
+      http-routing-int:
+      http-routing-ext:
+        aliases:
+        - secure.haproxy.myhouse
+    volumes:
+    - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    - ./certs/cert_key.pem:/usr/local/etc/haproxy/ssl/cert_key.pem
+  s1:
+    image: nginx:latest
+    networks:
+      http-routing-int:
+        aliases:
+        - hello
+    volumes:
+    - ./hello/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+    - haproxy
+  s2:
+    image: nginx:latest
+    networks:
+      http-routing-int:
+        aliases:
+        - bye
+    volumes:
+    - ./bye/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+    - haproxy
+  client:
+    image: alpine:3.16
+    networks:
+    - http-routing-ext
+    volumes:
+    - ./certs/cert.pem:/root/cert.pem
+    - ./client/entrypoint.sh:/root/entrypoint.sh
+    entrypoint: /root/entrypoint.sh
+    depends_on:
+    - haproxy
+networks:
+  http-routing-int:
+    name: http-routing-int
+    external: false
+  http-routing-ext:
+    name: http-routing-ext
+    external: false
